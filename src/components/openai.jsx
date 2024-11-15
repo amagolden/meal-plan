@@ -5,6 +5,7 @@ const OpenAiComponent = () => {
   //const [prompt, setPrompt] = useState('');
   const [response, setResponse] = useState('');
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const options = [
@@ -47,6 +48,7 @@ const OpenAiComponent = () => {
   
   const fetchOpenAiResponse = async () => {
     const userChoice = selectedOptions.join(', ');
+    setLoading(true);
 
     try {
       const result = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -95,6 +97,8 @@ const OpenAiComponent = () => {
 
     } catch (error) {
       console.error('Error fetching data from OpenAI API:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,6 +128,12 @@ const OpenAiComponent = () => {
 
         <button onClick={fetchOpenAiResponse}>Get Response</button>
       </div>
+      {loading ? (
+      <div className="spinner column response-section">
+        <h2>Custom Meal Plan:</h2>
+        <p>Loading...</p>
+      </div>
+    ) : (
       <div className="column response-section">
         <h2>Custom Meal Plan:</h2> 
         {daysOfWeek.map((day) => {
@@ -138,6 +148,7 @@ const OpenAiComponent = () => {
           );
         })}
       </div>
+    )}
       <div className="column"></div>
     </div>
   );
