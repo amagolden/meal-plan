@@ -1,15 +1,17 @@
-import './App.css';
-import OpenAiComponent from "./components/openai";
-import Header from './components/header';
-import Content from './components/content';
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import Routes from './routes';
+import './App.css'; 
 
 function App() {
   return (
-    <div className="App">
-      <Header />
-      <Content />
-    </div>
+    <Router>
+      <div className="App">
+        <Routes />
+      </div>
+    </Router>
   );
 }
 
 export default App;
+

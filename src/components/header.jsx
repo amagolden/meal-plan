@@ -109,7 +109,7 @@ export default function Header() {
           <a href="/" className="text-sm/6 font-semibold text-gray-900">
             Features
           </a>
-          <a href="/" className="text-sm/6 font-semibold text-gray-900">
+          <a href="/product" className="text-sm/6 font-semibold text-gray-900">
             Product
           </a>
         </PopoverGroup>
@@ -168,7 +168,7 @@ export default function Header() {
                   Features
                 </a>
                 <a
-                  href="#"
+                  href="/product"
                   className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                 >
                   Product
