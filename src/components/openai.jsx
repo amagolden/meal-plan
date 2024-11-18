@@ -1,20 +1,10 @@
-// Import React and useState (optional for managing input and responses)
 import React, { useState } from 'react';
 
-const OpenAiComponent = () => {
-  //const [prompt, setPrompt] = useState('');
+const OpenAiComponent = ({ selectedPreferences }) => {
   const [response, setResponse] = useState('');
-  const [selectedOptions, setSelectedOptions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const options = [
-    'Healthy',
-    'Mediterranean Diet',
-    'Vegan',
-    'Kid-Friendly',
-    'Quick Recipes',
-  ];
 
   const standardPrompt = `Please generate a meal plan for a week (7 days) that includes breakfast, lunch, and dinner for each day. Structure the response in the following JSON format:
 
@@ -37,17 +27,9 @@ const OpenAiComponent = () => {
     ...
   }
   Please ensure the JSON format is valid and clearly separated by days of the week.`
-
-  const handleCheckboxChange = (option) => {
-    setSelectedOptions((prevSelectedOptions) =>
-      prevSelectedOptions.includes(option)
-        ? prevSelectedOptions.filter((item) => item !== option) // Remove if already selected
-        : [...prevSelectedOptions, option] // Add if not selected
-    );
-  };
   
   const fetchOpenAiResponse = async () => {
-    const userChoice = selectedOptions.join(', ');
+    const preferences = selectedPreferences.join(', ');
     setLoading(true);
 
     try {
@@ -60,7 +42,7 @@ const OpenAiComponent = () => {
         body: JSON.stringify({
           model: "gpt-3.5-turbo", 
           messages: [
-            { role: "user", content: `${standardPrompt} with the following user preferences ${userChoice}` }
+            { role: "user", content: `${standardPrompt} with the following user preferences ${preferences}` }
           ],
           max_tokens: 1000,
         }),
@@ -103,53 +85,34 @@ const OpenAiComponent = () => {
   };
 
   return (
-    <div className="container">
-      <div className="column"></div>
-      <div className="column meal-preferences">
-        <h2>Select Meal Preferences:</h2>
-        {options.map((option) => (
-          <div key={option}>
-            <input
-              type="checkbox"
-              id={option}
-              checked={selectedOptions.includes(option)}
-              onChange={() => handleCheckboxChange(option)}
-            />
-            <label htmlFor={option}>{option}</label>
-          </div>
-        ))}
-
-          {/*      
-          <textarea
-            placeholder="Enter a prompt"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-          />*/}
-
-        <button onClick={fetchOpenAiResponse}>Get Response</button>
-      </div>
+    <div className="flex-1 p-4">
+      <h2 className="text-lg font-bold">Custom Meal Plan</h2>
       {loading ? (
-      <div className="spinner column response-section">
-        <h2>Custom Meal Plan:</h2>
         <p>Loading...</p>
-      </div>
-    ) : (
-      <div className="column response-section">
-        <h2>Custom Meal Plan:</h2> 
-        {daysOfWeek.map((day) => {
-          //console.log(`Accessing data for ${day}:`, response[day]);
-          return (
-            <div key={day} style={{ marginBottom: '20px' }}>
-              <h3>{day}</h3>
-              <p><strong>Breakfast:</strong> {response[day]?.breakfast || 'Not available'}</p>
-              <p><strong>Lunch:</strong> {response[day]?.lunch || 'Not available'}</p>
-              <p><strong>Dinner:</strong> {response[day]?.dinner || 'Not available'}</p>
+        ) : (
+          <div>
+              {daysOfWeek.map((day) => (
+                <div key={day} className="mb-4">
+                  <h3 className="text-md font-semibold">{day}</h3>
+                  <p>
+                    <strong>Breakfast:</strong> {response[day]?.breakfast || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Lunch:</strong> {response[day]?.lunch || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Dinner:</strong> {response[day]?.dinner || "N/A"}
+                  </p>
+                </div>
+              ))}
             </div>
-          );
-        })}
-      </div>
-    )}
-      <div className="column"></div>
+        )}
+      <button
+        onClick={fetchOpenAiResponse}
+        className="mt-4 bg-indigo-600 text-white rounded-md px-3 py-2 hover:bg-indigo-500"
+        >
+        Generate Meal Plan
+      </button>
     </div>
   );
 };

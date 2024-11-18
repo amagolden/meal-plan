@@ -1,13 +1,13 @@
 import './App.css';
 import OpenAiComponent from "./components/openai";
 import Header from './components/header';
+import MealForm from './components/form';
 
 function MealPlan() {
   return (
-    <div className="App">
+    <div className="Plan">
       <Header />
-      <h1>Welcome to our Meal Planner</h1>
-      <p>We create weekly meal plans based on your dietary preferences with the goal of reducing food waste.</p>
+      <MealForm />
       <OpenAiComponent />
     </div>
   );
