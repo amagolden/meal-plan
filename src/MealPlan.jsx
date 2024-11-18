@@ -8,7 +8,6 @@ function MealPlan() {
     <div className="Plan">
       <Header />
       <MealForm />
-      <OpenAiComponent />
     </div>
   );
 }
