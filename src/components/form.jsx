@@ -4,6 +4,9 @@ import OpenAiComponent from "./openai";
 
 export default function MealForm() {
     const [selectedPreferences, setSelectedPreferences] = useState([]);
+    const [response, setResponse] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
     const handleCheckboxChange = (option) => {
         setSelectedPreferences((prev) =>
@@ -13,12 +16,6 @@ export default function MealForm() {
         );
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // You could trigger a callback or pass the data to OpenAiComponent
-        console.log("Selected Preferences:", selectedPreferences);
-    };
-
     const preferences = [
         "Healthy",
         "Mediterranean Diet",
@@ -26,6 +23,84 @@ export default function MealForm() {
         "Kid-Friendly",
         "Quick Recipes",
     ];
+
+    const standardPrompt = `Please generate a meal plan for a week (7 days) that includes breakfast, lunch, and dinner for each day. Structure the response in the following JSON format:
+
+    {
+        "Monday": {
+        "breakfast": "Scrambled eggs with spinach",
+        "lunch": "Grilled cheese sandwich with tomato soup",
+        "dinner": "Baked chicken with roasted vegetables"
+        },
+        "Tuesday": {
+        "breakfast": "Oatmeal with fruits",
+        "lunch": "Turkey and cheese wraps",
+        "dinner": "Spaghetti with marinara sauce"
+        },
+        "Wednesday": {
+        "breakfast": "Pancakes with syrup and berries",
+        "lunch": "Chicken Caesar salad",
+        "dinner": "Tacos with ground beef and avocado"
+        },
+        ...
+    }
+    Please ensure the JSON format is valid and clearly separated by days of the week.`
+    
+    const fetchOpenAiResponse = async () => {
+        const preferences = selectedPreferences.join(', ');
+        setLoading(true);
+
+        try {
+        const result = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+            model: "gpt-3.5-turbo", 
+            messages: [
+                { role: "user", content: `${standardPrompt} with the following user preferences ${preferences}` }
+            ],
+            max_tokens: 1000,
+            }),
+        });
+
+        const data = await result.json();
+        //console.log("Raw API Response Content:", data.choices[0].message.content);
+
+        // Try to parse the content as JSON
+        let parsedResponse;
+        try {
+            parsedResponse = JSON.parse(data.choices[0].message.content);
+        } catch (parseError) {
+            console.error("Response parsing error. Using fallback approach.", parseError);
+            
+            {/*// Fallback to attempt a manual parse if structured text
+            parsedResponse = daysOfWeek.reduce((acc, day) => {
+            const dayDataMatch = data.choices[0].message.content.match(
+                new RegExp(`${day}:\\s*\\n\\s*Breakfast: (.*)\\n\\s*Lunch: (.*)\\n\\s*Dinner: (.*)`, 'i')
+            );
+            if (dayDataMatch) {
+                acc[day] = {
+                breakfast: dayDataMatch[1].trim(),
+                lunch: dayDataMatch[2].trim(),
+                dinner: dayDataMatch[3].trim(),
+                };
+            }
+            return acc;
+            }, {});*/}
+        }
+
+        //console.log("Final Parsed Response:", parsedResponse);
+        setResponse(parsedResponse);
+
+        } catch (error) {
+        console.error('Error fetching data from OpenAI API:', error);
+        } finally {
+        setLoading(false);
+        }
+    };
     
     return (
       <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -42,7 +117,12 @@ export default function MealForm() {
         {/* Form and Output Section */}
         <div className="grid grid-cols-2 gap-6">
           {/* Form Column */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form 
+            onSubmit={(e) => {
+                e.preventDefault();
+                fetchOpenAiResponse();
+              }}   
+            className="space-y-6">
             <div className="border-b border-gray-900/10 pb-6">
               <h3 className="text-lg font-semibold text-gray-900">Dietary Preferences</h3>
               <fieldset className="mt-4 space-y-2">
@@ -62,15 +142,19 @@ export default function MealForm() {
                 </fieldset>
             </div>
   
-            <div className="flex justify-center">
-              <button
+            <button
                 type="submit"
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Get Plan
-              </button>
-            </div>
-          </form>
+                className="mt-4 w-full bg-indigo-600 text-white rounded-md px-3 py-2 hover:bg-indigo-500"
+                disabled={loading}
+                >
+                {loading ? "Loading..." : "Get Plan"}
+                </button>
+            </form>
+
+            {/* Display Meal Plan */}
+            <OpenAiComponent response={response} loading={loading} />
+        </div>
+          
   
           {/* Output Column */}
           {/*<div className="border border-gray-300 rounded-lg p-4">
@@ -82,9 +166,6 @@ export default function MealForm() {
             </div>
           </div>*/}
             
-          <OpenAiComponent selectedPreferences={selectedPreferences} />
-
-        </div>
       </div>
     );
   }
