@@ -115,7 +115,7 @@ export default function MealForm() {
         </div>
   
         {/* Form and Output Section */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {/* Form Column */}
           <form 
             onSubmit={(e) => {
