@@ -45,6 +45,28 @@ export default function MealForm() {
         ...
     }
     Please ensure the JSON format is valid and clearly separated by days of the week.`
+
+    /*const standardPrompt = `Please generate a meal plan for a week (7 days) that includes breakfast, lunch, and dinner for each day. Include the ingredients for each meal. Structure the response in the following JSON format:
+
+    {
+        "Monday": {
+            "breakfast": {
+                "meal": "Scrambled eggs with spinach",
+                "ingredients": ["eggs", "spinach", "salt", "pepper"]
+            },
+            "lunch": {
+                "meal": "Grilled cheese sandwich with tomato soup",
+                "ingredients": ["bread", "cheese", "tomato soup"]
+            },
+            "dinner": {
+                "meal": "Baked chicken with roasted vegetables",
+                "ingredients": ["chicken", "carrots", "potatoes", "olive oil", "salt", "pepper"]
+            }
+        },
+        ...
+    }
+    Please ensure the JSON format is valid and clearly separated by days of the week.`;
+*/
     
     const fetchOpenAiResponse = async () => {
         const preferences = selectedPreferences.join(', ');
@@ -148,8 +170,8 @@ export default function MealForm() {
                 disabled={loading}
                 >
                 {loading ? "Loading..." : "Get Plan"}
-                </button>
-            </form>
+            </button>
+          </form>
 
             {/* Display Meal Plan */}
             <OpenAiComponent response={response} loading={loading} />
