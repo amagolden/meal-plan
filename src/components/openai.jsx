@@ -43,6 +43,15 @@ const OpenAiComponent = ({ response, loading  }) => {
     URL.revokeObjectURL(url);
   };
 
+  const ingredientPrompt = `{provide a list of total ingredients in as json format that includes ingredients and quanitities. Here's an example output:
+    "ingredients": {
+      "Greek yogurt": "1 container",
+      "honey": "to taste",
+      "walnuts": "1/4 cup"
+    }
+
+    Create a list of consolidated ingredients for this meal plan: ${JSON.stringify(response)}
+  }`
 
   const handleFetchIngredients = async () => {
     setLoadingIngredients(true);
@@ -57,7 +66,7 @@ const OpenAiComponent = ({ response, loading  }) => {
         body: JSON.stringify({
         model: "gpt-3.5-turbo", 
         messages: [
-            { role: "user", content: `provide a list of total ingredients in json format for this meal plan: ${JSON.stringify(response)}` }
+            { role: "user", content: ingredientPrompt }
         ],
         max_tokens: 1000,
         }),
@@ -90,8 +99,10 @@ const OpenAiComponent = ({ response, loading  }) => {
       return;
     }
 
-    const csvRows = ["Ingredient"];
-    ingredients.forEach((ingredient) => csvRows.push(ingredient));
+    const csvRows = ["Ingredient,Quantity"];
+    Object.entries(ingredients).forEach(([ingredient, quantity]) =>
+      csvRows.push(`${ingredient},${quantity}`)
+    );
 
     const csvContent = csvRows.join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
