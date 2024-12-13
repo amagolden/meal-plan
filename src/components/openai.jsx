@@ -43,15 +43,16 @@ const OpenAiComponent = ({ response, loading  }) => {
     URL.revokeObjectURL(url);
   };
 
-  const ingredientPrompt = `{provide a list of total ingredients in as json format that includes ingredients and quanitities. Here's an example output:
+  const ingredientPrompt = `Given the following meal plan, provide a consolidated list of ingredients in JSON format, including quantities where applicable. Example format:
+  {
     "ingredients": {
       "Greek yogurt": "1 container",
       "honey": "to taste",
       "walnuts": "1/4 cup"
     }
+  }
+  Meal Plan: ${JSON.stringify(response)}`;
 
-    Create a list of consolidated ingredients for this meal plan: ${JSON.stringify(response)}
-  }`
 
   const handleFetchIngredients = async () => {
     setLoadingIngredients(true);
@@ -76,22 +77,28 @@ const OpenAiComponent = ({ response, loading  }) => {
     console.log("Raw API Response Content:", data.choices[0].message.content);
 
     // Try to parse the content as JSON
+    const content = data.choices[0].message.content.trim();
     let parsedResponse;
-    try {
-        parsedResponse = JSON.parse(data.choices[0].message.content);
-    } catch (parseError) {
-        console.error("Response parsing error. Using fallback approach.", parseError);
-    }
 
-    //console.log("Final Parsed Response:", parsedResponse);
-    setIngredients(parsedResponse);
+      try {
+        parsedResponse = JSON.parse(content);
+      } catch (parseError) {
+        console.error("Failed to parse response. Ensure it is in valid JSON format.", parseError);
+        alert("Could not fetch ingredients. Please try again.");
+      }
 
+      if (parsedResponse?.ingredients) {
+        setIngredients(parsedResponse.ingredients);
+      } else {
+        console.error("No valid 'ingredients' key found in response.");
+      }
     } catch (error) {
-    console.error('Error fetching data from OpenAI API:', error);
+      console.error('Error fetching data from OpenAI API:', error);
+      alert("Error fetching data. Please check your connection and try again.");
     } finally {
-    setLoadingIngredients(false);
+      setLoadingIngredients(false);
     }
-};
+  };
 
   const getIngredients = () => {
     if (!response) {
